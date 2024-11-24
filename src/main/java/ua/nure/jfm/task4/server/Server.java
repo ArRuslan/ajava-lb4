@@ -43,7 +43,12 @@ public class Server {
         }
 
         for(ClientHandler client : clients.values()) {
-            client.send(new ServerStoppingPacket());
+            try {
+                client.send(new ServerStoppingPacket());
+            } catch (IOException e) {
+                System.err.println("Failed to send SERVER_STOPPING packet to client: " + e);
+            }
+
             client.close();
         }
 

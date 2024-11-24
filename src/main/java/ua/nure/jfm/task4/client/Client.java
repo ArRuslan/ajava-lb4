@@ -13,6 +13,7 @@ public class Client {
     private final String address;
     private final int port;
     private Socket socket;
+    private boolean running = true;
 
     private BufferedReader reader;
     private BufferedWriter writer;
@@ -30,7 +31,7 @@ public class Client {
         writer.flush();
     }
 
-    synchronized public void connect() throws IOException {
+    public void connect() throws IOException {
         if(socket != null) {
             throw new IllegalStateException("Client is already connected to server!");
         }
@@ -39,10 +40,19 @@ public class Client {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-        send(new LoginPacket("test", "test"));
-        send(new SendMessagePacket("test message"));
-
         loop();
+    }
+
+    public void authenticate(String login, String password) {
+        if(socket == null) {
+            throw new IllegalStateException("Client is not connected to server!");
+        }
+
+        try {
+            send(new LoginPacket(login, password));
+        } catch (IOException e) {
+            System.err.println("Failed to authenticate:" + e);
+        }
     }
 
     private void loop() {
@@ -58,10 +68,35 @@ public class Client {
                 break;
             }
 
-            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
-            if(packet instanceof NewMessagePacket messagePacket) {
-                System.out.println("  From: "+messagePacket.login+", Text: " + messagePacket.text);
+            if (packet instanceof NewMessagePacket messagePacket) {
+                System.out.println("[" + messagePacket.login + "]  " + messagePacket.text);
             }
+        }
+
+        running = false;
+    }
+
+    public void disconnect() throws IOException {
+        if(socket == null) {
+            throw new IllegalStateException("Client is not connected to server!");
+        }
+
+        socket.close();
+    }
+
+    public boolean isRunning() {
+        return socket != null && running;
+    }
+
+    public void sendMessage(String text) {
+        if(!isRunning()) {
+            throw new IllegalStateException("Client is not connected to server!");
+        }
+
+        try {
+            send(new SendMessagePacket(text));
+        } catch (IOException e) {
+            System.err.println("Failed to send message:" + e);
         }
     }
 }
