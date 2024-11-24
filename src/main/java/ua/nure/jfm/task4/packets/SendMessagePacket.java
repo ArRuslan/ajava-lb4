@@ -4,12 +4,17 @@ import java.io.BufferedReader;
 
 public class SendMessagePacket extends BasePacket {
     @Override
+    public PacketType getPacketType() {
+        return PacketType.SEND_MESSAGE;
+    }
+
+    @Override
     public byte[] encode() {
         return new byte[0];
     }
 
     @Override
-    protected BasePacket decode(BufferedReader reader) {
-        return null;
+    public void decode(BufferedReader reader) {
+
     }
 }

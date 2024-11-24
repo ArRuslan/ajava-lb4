@@ -1,6 +1,7 @@
 package ua.nure.jfm.task4.packets;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,7 @@ public class ServerErrorPacket extends BasePacket {
     public int code;
     public String message;
 
-    private ServerErrorPacket() {
+    ServerErrorPacket() {
         code = 0;
         message = "";
     }
@@ -19,6 +20,11 @@ public class ServerErrorPacket extends BasePacket {
 
         this.code = code;
         this.message = message;
+    }
+
+    @Override
+    public PacketType getPacketType() {
+        return PacketType.SERVER_ERROR;
     }
 
     @Override
@@ -34,7 +40,26 @@ public class ServerErrorPacket extends BasePacket {
     }
 
     @Override
-    public BasePacket decode(BufferedReader reader) {
-        return null;
+    public void decode(BufferedReader reader) throws IOException {
+        char[] tmp = new char[INT_SIZE];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+        ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        code = buf.getInt();
+
+        tmp = new char[STRING_LENGTH_SIZE];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+
+        buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        char messageSize = buf.getChar();
+
+        tmp = new char[messageSize];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+        message = new String(tmp);
     }
 }

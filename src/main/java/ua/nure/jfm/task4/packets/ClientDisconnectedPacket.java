@@ -4,12 +4,17 @@ import java.io.BufferedReader;
 
 public class ClientDisconnectedPacket extends BasePacket {
     @Override
+    public PacketType getPacketType() {
+        return PacketType.CLIENT_DISCONNECTED;
+    }
+
+    @Override
     public byte[] encode() {
         return new byte[0];
     }
 
     @Override
-    protected BasePacket decode(BufferedReader reader) {
-        return null;
+    public void decode(BufferedReader reader) {
+
     }
 }

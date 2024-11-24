@@ -8,8 +8,9 @@ public abstract class BasePacket {
     public int INT_SIZE = 4;
     public int STRING_LENGTH_SIZE = 2;
 
+    abstract public PacketType getPacketType();
     abstract public byte[] encode();
-    abstract public BasePacket decode(BufferedReader reader);
+    abstract public void decode(BufferedReader reader) throws IOException;
 
     protected static void checkStringSize(String string) {
         if(string.getBytes(StandardCharsets.UTF_8).length > 0x7fff) {
@@ -17,11 +18,30 @@ public abstract class BasePacket {
         }
     }
 
+    protected static boolean readExactly(BufferedReader reader, char[] out) throws IOException {
+        int totalRead = 0;
+        int read = reader.read(out);
+        totalRead += read;
+        while(read != -1 && totalRead < out.length) {
+            read = reader.read(out, totalRead, out.length - totalRead);
+            totalRead += read;
+        }
+
+        return read != -1;
+    }
+
+    protected static byte[] charArrToByteArr(char[] arr) {
+        byte[] result = new byte[arr.length];
+        for(int i = 0; i < arr.length; i++) {
+            result[i] = (byte)arr[i];
+        }
+
+        return result;
+    }
+
     public static BasePacket readPacket(BufferedReader reader) throws IOException {
         char[] data = new char[1];
-        int read;
-        while((read = reader.read(data, 0, 1)) == 0);
-        if(read == -1) {
+        if(!readExactly(reader, data)) {
             throw new IOException("EOF");
         }
 
@@ -34,47 +54,40 @@ public abstract class BasePacket {
 
         switch (type) {
             case SERVER_ERROR: {
-                ServerErrorPacket packet_ = new ServerErrorPacket();
-                packet = packet_;
+                packet = new ServerErrorPacket();
                 break;
             }
             case LOGIN: {
-                LoginPacket packet_ = new LoginPacket();
-                packet = packet_;
+                packet = new LoginPacket();
                 break;
             }
             case SERVER_HELLO: {
-                ServerHelloPacket packet_ = new ServerHelloPacket();
-                packet = packet_;
+                packet = new ServerHelloPacket();
                 break;
             }
             case CLIENT_CONNECTED: {
-                ClientConnectedPacket packet_ = new ClientConnectedPacket();
-                packet = packet_;
+                packet = new ClientConnectedPacket();
                 break;
             }
             case CLIENT_DISCONNECTED: {
-                ClientDisconnectedPacket packet_ = new ClientDisconnectedPacket();
-                packet = packet_;
+                packet = new ClientDisconnectedPacket();
                 break;
             }
             case SEND_MESSAGE: {
-                SendMessagePacket packet_ = new SendMessagePacket();
-                packet = packet_;
+                packet = new SendMessagePacket();
                 break;
             }
             case NEW_MESSAGE: {
-                NewMessagePacket packet_ = new NewMessagePacket();
-                packet = packet_;
+                packet = new NewMessagePacket();
                 break;
             }
             case SERVER_STOPPING: {
-                ServerStoppingPacket packet_ = new ServerStoppingPacket();
-                packet = packet_;
+                packet = new ServerStoppingPacket();
                 break;
             }
         }
 
+        packet.decode(reader);
         return packet;
     }
 }

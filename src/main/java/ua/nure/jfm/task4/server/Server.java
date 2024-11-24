@@ -1,9 +1,6 @@
 package ua.nure.jfm.task4.server;
 
-import ua.nure.jfm.task4.packets.BasePacket;
-import ua.nure.jfm.task4.packets.LoginPacket;
-import ua.nure.jfm.task4.packets.ServerErrorPacket;
-import ua.nure.jfm.task4.packets.ServerStoppingPacket;
+import ua.nure.jfm.task4.packets.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -61,15 +58,20 @@ public class Server {
             Socket clientSocket = socket.accept();
             ClientHandler client = new ClientHandler(this, clientSocket);
             BasePacket packet = client.readPacket();
-            if(!(packet instanceof LoginPacket)) {
+            if(!(packet instanceof LoginPacket loginPacket)) {
                 client.send(new ServerErrorPacket(400, "Expected LoginPacket to be first!"));
                 client.close();
                 return;
             }
 
-            LoginPacket loginPacket = (LoginPacket)packet;
-            // TODO: authenticate
+            // TODO: get logins and passwords from file
+            if(!loginPacket.login.equals("test") || !loginPacket.password.equals("test")) {
+                client.send(new ServerErrorPacket(401, "Invalid login or password!"));
+                client.close();
+                return;
+            }
 
+            client.send(new ServerHelloPacket());
             clients.put(loginPacket.login, client);
             client.handle();
         } catch (IOException e) {

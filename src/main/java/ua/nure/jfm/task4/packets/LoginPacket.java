@@ -1,6 +1,7 @@
 package ua.nure.jfm.task4.packets;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,7 @@ public class LoginPacket extends BasePacket {
     public String login;
     public String password;
 
-    private LoginPacket() {
+    LoginPacket() {
         login = "";
         password = "";
     }
@@ -20,6 +21,11 @@ public class LoginPacket extends BasePacket {
 
         this.login = login;
         this.password = password;
+    }
+
+    @Override
+    public PacketType getPacketType() {
+        return PacketType.LOGIN;
     }
 
     @Override
@@ -37,7 +43,33 @@ public class LoginPacket extends BasePacket {
     }
 
     @Override
-    public BasePacket decode(BufferedReader reader) {
-        return null;
+    public void decode(BufferedReader reader) throws IOException {
+        char[] tmp = new char[STRING_LENGTH_SIZE];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+
+        ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        char loginSize = buf.getChar();
+
+        tmp = new char[loginSize];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+        login = new String(tmp);
+
+        tmp = new char[STRING_LENGTH_SIZE];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+
+        buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        char passwordSize = buf.getChar();
+
+        tmp = new char[passwordSize];
+        if(!readExactly(reader, tmp)) {
+            throw new IOException("EOF");
+        }
+        password = new String(tmp);
     }
 }

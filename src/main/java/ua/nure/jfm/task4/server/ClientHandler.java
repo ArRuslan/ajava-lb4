@@ -46,7 +46,11 @@ public class ClientHandler {
         }
     }
 
-    synchronized public void send(BasePacket packet) {
-        //
+    synchronized public void send(BasePacket packet) throws IOException {
+        writer.write(packet.getPacketType().ordinal());
+        for(byte byt : packet.encode()) {
+            writer.write(byt);
+        }
+        writer.flush();
     }
 }
