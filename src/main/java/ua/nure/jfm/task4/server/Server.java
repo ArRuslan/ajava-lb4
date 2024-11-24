@@ -91,7 +91,7 @@ public class Server {
     protected void broadcast(BasePacket packet) {
         for(ClientHandler client : clients.values()) {
             try {
-                client.send(new ServerStoppingPacket());
+                client.send(packet);
             } catch (IOException e) {
                 System.err.println("Failed to send " + packet.getPacketType() + " packet to client: " + e);
             }
@@ -104,5 +104,9 @@ public class Server {
         }
 
         broadcast(new ClientDisconnectedPacket(client.getLogin()));
+    }
+
+    protected synchronized void clientSentMessage(ClientHandler client, String message) {
+        broadcast(new NewMessagePacket(client.getLogin(), message));
     }
 }

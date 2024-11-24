@@ -3,6 +3,8 @@ package ua.nure.jfm.task4.client;
 import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.BasePacket;
 import ua.nure.jfm.task4.packets.LoginPacket;
+import ua.nure.jfm.task4.packets.NewMessagePacket;
+import ua.nure.jfm.task4.packets.SendMessagePacket;
 
 import java.io.*;
 import java.net.Socket;
@@ -38,6 +40,7 @@ public class Client {
         writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
         send(new LoginPacket("test", "test"));
+        send(new SendMessagePacket("test message"));
 
         loop();
     }
@@ -54,7 +57,11 @@ public class Client {
                 System.err.println("Disconnected!");
                 break;
             }
+
             System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+            if(packet instanceof NewMessagePacket messagePacket) {
+                System.out.println("  From: "+messagePacket.login+", Text: " + messagePacket.text);
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package ua.nure.jfm.task4.server;
 
 import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.BasePacket;
+import ua.nure.jfm.task4.packets.SendMessagePacket;
 
 import java.io.*;
 import java.net.Socket;
@@ -43,7 +44,11 @@ public class ClientHandler {
                 System.err.println("Client disconnected!");
                 break;
             }
+
             System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+            if(packet instanceof SendMessagePacket messagePacket) {
+                server.clientSentMessage(this, messagePacket.text);
+            }
         }
 
         server.clientDisconnected(this);
