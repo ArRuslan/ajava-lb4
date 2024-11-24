@@ -1,5 +1,6 @@
 package ua.nure.jfm.task4.client;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.BasePacket;
 import ua.nure.jfm.task4.packets.LoginPacket;
 
@@ -37,7 +38,23 @@ public class Client {
         writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
         send(new LoginPacket("test", "test"));
-        BasePacket packet = BasePacket.readPacket(reader);
-        System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+
+        loop();
+    }
+
+    private void loop() {
+        while(!socket.isClosed()) {
+            BasePacket packet;
+            try {
+                packet = BasePacket.readPacket(reader);
+            } catch (IOException e) {
+                System.err.println("Failed to read packet:" + e);
+                continue;
+            } catch (EOFException e) {
+                System.err.println("Disconnected!");
+                break;
+            }
+            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+        }
     }
 }

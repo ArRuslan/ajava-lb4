@@ -1,5 +1,7 @@
 package ua.nure.jfm.task4.packets;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -43,10 +45,10 @@ public class LoginPacket extends BasePacket {
     }
 
     @Override
-    public void decode(BufferedReader reader) throws IOException {
+    public void decode(BufferedReader reader) throws IOException, EOFException {
         char[] tmp = new char[STRING_LENGTH_SIZE];
         if(!readExactly(reader, tmp)) {
-            throw new IOException("EOF");
+            throw new EOFException();
         }
 
         ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
@@ -54,13 +56,13 @@ public class LoginPacket extends BasePacket {
 
         tmp = new char[loginSize];
         if(!readExactly(reader, tmp)) {
-            throw new IOException("EOF");
+            throw new EOFException();
         }
         login = new String(tmp);
 
         tmp = new char[STRING_LENGTH_SIZE];
         if(!readExactly(reader, tmp)) {
-            throw new IOException("EOF");
+            throw new EOFException();
         }
 
         buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
@@ -68,7 +70,7 @@ public class LoginPacket extends BasePacket {
 
         tmp = new char[passwordSize];
         if(!readExactly(reader, tmp)) {
-            throw new IOException("EOF");
+            throw new EOFException();
         }
         password = new String(tmp);
     }

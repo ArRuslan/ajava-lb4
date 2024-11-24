@@ -1,5 +1,6 @@
 package ua.nure.jfm.task4.server;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.*;
 
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class Server {
             throw new IllegalStateException("Server is not running!");
         }
 
+        String login = "";
         try {
             Socket clientSocket = socket.accept();
             ClientHandler client = new ClientHandler(this, clientSocket);
@@ -71,11 +73,36 @@ public class Server {
                 return;
             }
 
+            login = loginPacket.login;
+            client.setLogin(login);
             client.send(new ServerHelloPacket());
             clients.put(loginPacket.login, client);
             client.handle();
         } catch (IOException e) {
-            System.err.println("Failed to authenticate client: "+e);
+            System.err.println("Failed to authenticate client: " + e);
+        } catch (EOFException e) {
+            System.err.println("Failed to authenticate client: Disconnected");
+            return;
         }
+
+        broadcast(new ClientConnectedPacket(login));
+    }
+
+    protected void broadcast(BasePacket packet) {
+        for(ClientHandler client : clients.values()) {
+            try {
+                client.send(new ServerStoppingPacket());
+            } catch (IOException e) {
+                System.err.println("Failed to send " + packet.getPacketType() + " packet to client: " + e);
+            }
+        }
+    }
+
+    protected synchronized void clientDisconnected(ClientHandler client) {
+        if(clients.containsKey(client.getLogin()) && clients.get(client.getLogin()) == client) {
+            clients.remove(client.getLogin());
+        }
+
+        broadcast(new ClientDisconnectedPacket(client.getLogin()));
     }
 }

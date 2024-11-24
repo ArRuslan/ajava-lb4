@@ -1,6 +1,9 @@
 package ua.nure.jfm.task4.packets;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 
 public class SendMessagePacket extends BasePacket {
     @Override
@@ -14,7 +17,7 @@ public class SendMessagePacket extends BasePacket {
     }
 
     @Override
-    public void decode(BufferedReader reader) {
+    public void decode(BufferedReader reader) throws IOException, EOFException {
 
     }
 }

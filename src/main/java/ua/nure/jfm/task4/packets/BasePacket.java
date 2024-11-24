@@ -1,5 +1,7 @@
 package ua.nure.jfm.task4.packets;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +12,7 @@ public abstract class BasePacket {
 
     abstract public PacketType getPacketType();
     abstract public byte[] encode();
-    abstract public void decode(BufferedReader reader) throws IOException;
+    abstract public void decode(BufferedReader reader) throws IOException, EOFException;
 
     protected static void checkStringSize(String string) {
         if(string.getBytes(StandardCharsets.UTF_8).length > 0x7fff) {
@@ -39,10 +41,10 @@ public abstract class BasePacket {
         return result;
     }
 
-    public static BasePacket readPacket(BufferedReader reader) throws IOException {
+    public static BasePacket readPacket(BufferedReader reader) throws IOException, EOFException {
         char[] data = new char[1];
         if(!readExactly(reader, data)) {
-            throw new IOException("EOF");
+            throw new EOFException();
         }
 
         if(data[0] > PacketType.values().length) {

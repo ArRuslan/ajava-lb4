@@ -1,14 +1,15 @@
 package ua.nure.jfm.task4.server;
 
+import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.BasePacket;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ClientHandler {
     private final Server server;
     private final Socket socket;
+    private String login;
     private final BufferedReader reader;
     private final BufferedWriter writer;
 
@@ -22,13 +23,33 @@ public class ClientHandler {
         thread = new Thread(this::realHandle);
     }
 
-    private void realHandle() {
-        while(!socket.isClosed()) {
-
-        }
+    public void setLogin(String login) {
+        this.login = login;
     }
 
-    public BasePacket readPacket() throws IOException {
+    public String getLogin() {
+        return this.login;
+    }
+
+    private void realHandle() {
+        while (!socket.isClosed()) {
+            BasePacket packet;
+            try {
+                packet = BasePacket.readPacket(reader);
+            } catch (IOException e) {
+                System.err.println("Failed to read packet:" + e);
+                continue;
+            } catch (EOFException e) {
+                System.err.println("Client disconnected!");
+                break;
+            }
+            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+        }
+
+        server.clientDisconnected(this);
+    }
+
+    public BasePacket readPacket() throws IOException, EOFException {
         return BasePacket.readPacket(reader);
     }
 
@@ -48,7 +69,7 @@ public class ClientHandler {
 
     synchronized public void send(BasePacket packet) throws IOException {
         writer.write(packet.getPacketType().ordinal());
-        for(byte byt : packet.encode()) {
+        for(byte byt : packet.encode()) { // WHY????
             writer.write(byt);
         }
         writer.flush();
