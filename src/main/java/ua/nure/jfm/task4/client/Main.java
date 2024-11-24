@@ -34,16 +34,6 @@ public class Main {
     }
 
     private void run() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("\nStopping server...");
-
-            try {
-                client.disconnect();
-            } catch (IOException e) {
-                System.err.println("Error occurred while stopping server: "+e);
-            }
-        }));
-
         clientThread.start();
 
         Scanner scanner = new Scanner(System.in);
@@ -57,6 +47,14 @@ public class Main {
         while(client.isRunning()) {
             System.out.print("> ");
             String message = scanner.nextLine().trim();
+            if(message.equals("exit")) {
+                try {
+                    client.disconnect();
+                    break;
+                } catch (IOException ignored) {
+                }
+            }
+
             client.sendMessage(message);
         }
     }
