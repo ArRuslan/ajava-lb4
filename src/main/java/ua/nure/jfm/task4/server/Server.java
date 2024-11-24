@@ -4,21 +4,36 @@ import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class Server {
     private final String address;
     private final int port;
     private ServerSocket socket;
     private final Map<String, ClientHandler> clients = new HashMap<>();
+    private final Properties users = new Properties();
 
     public Server(String address, int port) {
         this.address = address;
         this.port = port;
+
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("users.properties");
+        if (stream == null) {
+            System.err.println("Failed to load users: stream is null");
+        } else {
+            try {
+                users.load(stream);
+                stream.close();
+            } catch (IOException e) {
+                System.err.println("Failed to load users: " + e);
+            }
+        }
     }
 
     public void run() throws IOException {
@@ -71,11 +86,21 @@ public class Server {
                 return;
             }
 
-            // TODO: get logins and passwords from file
-            if(!loginPacket.login.equals("test") || !loginPacket.password.equals("test")) {
+            if(!users.containsKey(loginPacket.login) || !users.get(loginPacket.login).equals(loginPacket.password)) {
                 client.send(new ServerErrorPacket(401, "Invalid login or password!"));
                 client.close();
                 return;
+            }
+
+            if(clients.containsKey(loginPacket.login)) {
+                ClientHandler oldClient = clients.get(loginPacket.login);
+                clients.remove(loginPacket.login);
+                try {
+                    oldClient.send(new ServerErrorPacket(403, "New client with same login is connecting."));
+                } catch (IOException e) {
+                    System.err.println("Failed to send " + packet.getPacketType() + " packet to old client: " + e);
+                }
+                oldClient.close();
             }
 
             login = loginPacket.login;

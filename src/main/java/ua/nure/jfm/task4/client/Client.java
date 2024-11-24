@@ -1,10 +1,7 @@
 package ua.nure.jfm.task4.client;
 
 import ua.nure.jfm.task4.exceptions.EOFException;
-import ua.nure.jfm.task4.packets.BasePacket;
-import ua.nure.jfm.task4.packets.LoginPacket;
-import ua.nure.jfm.task4.packets.NewMessagePacket;
-import ua.nure.jfm.task4.packets.SendMessagePacket;
+import ua.nure.jfm.task4.packets.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -69,7 +66,9 @@ public class Client {
             }
 
             if (packet instanceof NewMessagePacket messagePacket) {
-                System.out.println("[" + messagePacket.login + "]  " + messagePacket.text);
+                System.out.println("[" + messagePacket.login + "] " + messagePacket.text);
+            } else if (packet instanceof ServerErrorPacket errorPacket) {
+                System.out.println("[Server] Error #" + errorPacket.code + ": " + errorPacket.message);
             }
         }
 

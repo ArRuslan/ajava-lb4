@@ -67,8 +67,7 @@ public class ClientHandler {
         try {
             socket.close();
             thread.interrupt();
-            thread.wait();
-        } catch (IOException | InterruptedException ignored) {
+        } catch (IOException ignored) {
         }
     }
 
