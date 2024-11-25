@@ -87,6 +87,10 @@ public abstract class BasePacket {
                 packet = new ServerStoppingPacket();
                 break;
             }
+            case SHUTDOWN_REQUEST: {
+                packet = new ShutdownRequestPacket();
+                break;
+            }
         }
 
         packet.decode(reader);

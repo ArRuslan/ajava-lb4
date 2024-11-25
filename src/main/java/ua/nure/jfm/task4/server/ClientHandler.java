@@ -3,6 +3,7 @@ package ua.nure.jfm.task4.server;
 import ua.nure.jfm.task4.exceptions.EOFException;
 import ua.nure.jfm.task4.packets.BasePacket;
 import ua.nure.jfm.task4.packets.SendMessagePacket;
+import ua.nure.jfm.task4.packets.ShutdownRequestPacket;
 
 import java.io.*;
 import java.net.Socket;
@@ -45,9 +46,11 @@ public class ClientHandler {
                 break;
             }
 
-            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType());
+            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType() + " from " + login);
             if(packet instanceof SendMessagePacket messagePacket) {
                 server.clientSentMessage(this, messagePacket.text);
+            } else if(packet instanceof ShutdownRequestPacket shutdownPacket) {
+                server.clientSentShutdown(this, shutdownPacket.password);
             }
         }
 

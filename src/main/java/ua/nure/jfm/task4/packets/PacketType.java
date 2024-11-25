@@ -13,4 +13,5 @@ public enum PacketType {
     NEW_MESSAGE,
 
     SERVER_STOPPING,
+    SHUTDOWN_REQUEST,
 }

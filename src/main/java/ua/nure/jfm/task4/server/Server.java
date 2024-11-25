@@ -18,6 +18,7 @@ public class Server {
     private ServerSocket socket;
     private final Map<String, ClientHandler> clients = new HashMap<>();
     private final Properties users = new Properties();
+    private String shutdownPassword = null;
 
     public Server(String address, int port) {
         this.address = address;
@@ -68,6 +69,7 @@ public class Server {
         }
 
         socket.close();
+        socket = null;
     }
 
     private void acceptClient() {
@@ -138,5 +140,27 @@ public class Server {
 
     protected synchronized void clientSentMessage(ClientHandler client, String message) {
         broadcast(new NewMessagePacket(client.getLogin(), message));
+    }
+
+    protected synchronized void clientSentShutdown(ClientHandler client, String password) {
+        if(!shutdownPassword.equals(password)) {
+            try {
+                client.send(new ServerErrorPacket(403, "Shutdown password is incorrect!"));
+            } catch (IOException e) {
+                System.err.println("Failed to send SERVER_ERROR packet to client: " + e);
+            }
+            client.close();
+            return;
+        }
+
+        try {
+            stop();
+        } catch (IOException e) {
+            System.err.println("Failed to stop server: " + e);
+        }
+    }
+
+    public void setShutdownPassword(String shutdownPassword) {
+        this.shutdownPassword = shutdownPassword;
     }
 }
