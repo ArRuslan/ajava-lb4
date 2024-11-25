@@ -14,6 +14,10 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 public class Server {
+    static {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] %4$s:%2$s %5$s%6$s%n");
+    }
+
     private static final Logger logger = Logger.getLogger("Server");
 
     private final String address;
