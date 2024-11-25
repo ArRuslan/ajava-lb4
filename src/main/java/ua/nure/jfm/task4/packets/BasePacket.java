@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public abstract class BasePacket {
-    public int INT_SIZE = 4;
-    public int STRING_LENGTH_SIZE = 2;
+    public static final int INT_SIZE = 4;
+    public static final int STRING_LENGTH_SIZE = 2;
 
     abstract public PacketType getPacketType();
     abstract public byte[] encode();

@@ -17,7 +17,7 @@ public class ServerStoppingPacket extends BasePacket {
     }
 
     @Override
-    public void decode(BufferedReader reader) throws IOException, EOFException {
+    public void decode(BufferedReader reader) {
 
     }
 }

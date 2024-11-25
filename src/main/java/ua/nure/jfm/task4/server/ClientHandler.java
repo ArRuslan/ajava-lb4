@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 public class ClientHandler {
-    private static Logger logger = Logger.getLogger("ClientHandler");
+    private static final Logger logger = Logger.getLogger("ClientHandler");
 
     private final Server server;
     private final Socket socket;
@@ -18,7 +18,7 @@ public class ClientHandler {
     private final BufferedReader reader;
     private final BufferedWriter writer;
 
-    private Thread thread;
+    private final Thread thread;
 
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;

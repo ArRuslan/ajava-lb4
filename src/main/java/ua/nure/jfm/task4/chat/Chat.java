@@ -1,11 +1,6 @@
 package ua.nure.jfm.task4.chat;
 
 import ua.nure.jfm.task4.common.ClientBase;
-import ua.nure.jfm.task4.exceptions.EOFException;
-import ua.nure.jfm.task4.packets.*;
-
-import java.io.*;
-import java.net.Socket;
 
 public class Chat extends ClientBase {
     private final Runnable authenticationCallback;

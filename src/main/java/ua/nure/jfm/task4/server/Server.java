@@ -85,7 +85,7 @@ public class Server {
             throw new IllegalStateException("Server is not running!");
         }
 
-        String login = "";
+        String login;
         try {
             Socket clientSocket = socket.accept();
             logger.info("Client connected: " + clientSocket.getInetAddress() + ":" + clientSocket.getLocalPort());
