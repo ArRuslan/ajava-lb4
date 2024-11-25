@@ -5,9 +5,8 @@ import java.util.Scanner;
 
 public class Main {
     private final Chat client;
-    private final Thread clientThread;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Server address [0.0.0.0]: ");
         String address = scanner.nextLine().trim();
@@ -23,31 +22,25 @@ public class Main {
     }
 
     Main(String address, int port) {
-        client = new Chat(address, port);
-        clientThread = new Thread(() -> {
-            try {
-                client.connect();
-            } catch (IOException e) {
-                System.err.println("Error occurred while starting chat: "+e);
-            }
-        });
+        client = new Chat(address, port, this::authenticateCallback);
     }
 
-    private void run() {
-        clientThread.start();
-
+    private void authenticateCallback() {
         Scanner scanner = new Scanner(System.in);
+
         System.out.print("Login: ");
         String login = scanner.nextLine().trim();
         System.out.print("Password: ");
         String password = scanner.nextLine().trim();
 
         client.authenticate(login, password);
+    }
 
+    private void run() {
         try {
-            clientThread.join();
-        } catch (InterruptedException ignored) {
-            //
+            client.connect();
+        } catch (IOException e) {
+            System.err.println("Error occurred while starting chat: "+e);
         }
     }
 }

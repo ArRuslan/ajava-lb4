@@ -112,6 +112,7 @@ public class Server {
             client.handle();
         } catch (IOException e) {
             System.err.println("Failed to authenticate client: " + e);
+            return;
         } catch (EOFException e) {
             System.err.println("Failed to authenticate client: Disconnected");
             return;
@@ -121,6 +122,7 @@ public class Server {
     }
 
     protected void broadcast(BasePacket packet) {
+        System.out.println("Broadcasting "+packet.getPacketType()+" to " + clients.size() + " clients");
         for(ClientHandler client : clients.values()) {
             try {
                 client.send(packet);

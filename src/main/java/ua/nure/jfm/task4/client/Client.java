@@ -1,90 +1,18 @@
 package ua.nure.jfm.task4.client;
 
-import ua.nure.jfm.task4.exceptions.EOFException;
-import ua.nure.jfm.task4.packets.*;
+import ua.nure.jfm.task4.common.ClientBase;
+import ua.nure.jfm.task4.packets.SendMessagePacket;
 
-import java.io.*;
-import java.net.Socket;
+import java.io.IOException;
 
-public class Client {
-    private final String address;
-    private final int port;
-    private Socket socket;
-    private boolean running = true;
+public class Client extends ClientBase {
+    private final Runnable authenticationCallback;
+    private final Thread inputThread;
 
-    private BufferedReader reader;
-    private BufferedWriter writer;
-
-    public Client(String address, int port) {
-        this.address = address;
-        this.port = port;
-    }
-
-    synchronized public void send(BasePacket packet) throws IOException {
-        writer.write(packet.getPacketType().ordinal());
-        for(byte byt : packet.encode()) {
-            writer.write(byt);
-        }
-        writer.flush();
-    }
-
-    public void connect() throws IOException {
-        if(socket != null) {
-            throw new IllegalStateException("Client is already connected to server!");
-        }
-
-        socket = new Socket(address, port);
-        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-        loop();
-    }
-
-    public void authenticate(String login, String password) {
-        if(socket == null) {
-            throw new IllegalStateException("Client is not connected to server!");
-        }
-
-        try {
-            send(new LoginPacket(login, password));
-        } catch (IOException e) {
-            System.err.println("Failed to authenticate:" + e);
-        }
-    }
-
-    private void loop() {
-        while(!socket.isClosed()) {
-            BasePacket packet;
-            try {
-                packet = BasePacket.readPacket(reader);
-            } catch (IOException e) {
-                System.err.println("Failed to read packet:" + e);
-                continue;
-            } catch (EOFException e) {
-                System.err.println("Disconnected!");
-                break;
-            }
-
-            if (packet instanceof NewMessagePacket messagePacket) {
-                System.out.println("[" + messagePacket.login + "] " + messagePacket.text);
-            } else if (packet instanceof ServerErrorPacket errorPacket) {
-                System.out.println("[Server] Error #" + errorPacket.code + ": " + errorPacket.message);
-            }
-        }
-
-        running = false;
-    }
-
-    public void disconnect() throws IOException {
-        if(socket == null) {
-            throw new IllegalStateException("Client is not connected to server!");
-        }
-
-        socket.close();
-    }
-
-    public boolean isRunning() {
-        return socket != null && running;
+    public Client(String address, int port, Runnable authenticationCallback, Runnable inputLoop) {
+        super(address, port);
+        this.authenticationCallback = authenticationCallback;
+        this.inputThread = new Thread(inputLoop);
     }
 
     public void sendMessage(String text) {
@@ -95,7 +23,40 @@ public class Client {
         try {
             send(new SendMessagePacket(text));
         } catch (IOException e) {
-            System.err.println("Failed to send message:" + e);
+            onClientError("Failed to send message:" + e);
         }
+    }
+
+    protected void onAuthentication() {
+        authenticationCallback.run();
+    }
+
+    protected void onAuthenticated() {
+        inputThread.start();
+    }
+
+    protected void onServerError(int code, String message) {
+        System.out.println("[Server] Error #" + code + ": " + message);
+    }
+
+    protected void onClientError(String message) {
+        System.err.println(message);
+    }
+
+    protected void onNewMessage(String from, String text) {
+        System.out.println("[" + from + "] " + text);
+    }
+
+    protected void onClientConnected(String login) {
+        System.out.println("[Server] " + login + " connected!");
+    }
+
+    protected void onClientDisconnected(String login) {
+        System.out.println("[Server] " + login + " disconnected!");
+    }
+
+    protected void onDisconnected() {
+        System.err.println("Disconnected!");
+        inputThread.interrupt();
     }
 }

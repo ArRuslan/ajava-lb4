@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
-public class ClientDisconnectedPacket extends ClientConnectedPacket {
+public class ClientDisconnectedPacket extends BasePacket {
     public String login;
 
     ClientDisconnectedPacket() {

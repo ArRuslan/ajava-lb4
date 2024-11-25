@@ -5,7 +5,6 @@ import java.util.Scanner;
 
 public class Main {
     private final Client client;
-    private final Thread clientThread;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -23,26 +22,30 @@ public class Main {
     }
 
     Main(String address, int port) {
-        client = new Client(address, port);
-        clientThread = new Thread(() -> {
-            try {
-                client.connect();
-            } catch (IOException e) {
-                System.err.println("Error occurred while starting client: "+e);
-            }
-        });
+        client = new Client(address, port, this::authenticateCallback, this::inputLoop);
     }
 
     private void run() {
-        clientThread.start();
+        try {
+            client.connect();
+        } catch (IOException e) {
+            System.err.println("Error occurred while starting client: "+e);
+        }
+    }
 
+    private void authenticateCallback() {
         Scanner scanner = new Scanner(System.in);
+
         System.out.print("Login: ");
         String login = scanner.nextLine().trim();
         System.out.print("Password: ");
         String password = scanner.nextLine().trim();
 
         client.authenticate(login, password);
+    }
+
+    private void inputLoop() {
+        Scanner scanner = new Scanner(System.in);
 
         while(client.isRunning()) {
             System.out.print("> ");
