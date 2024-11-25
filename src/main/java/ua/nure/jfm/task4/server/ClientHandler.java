@@ -7,8 +7,11 @@ import ua.nure.jfm.task4.packets.ShutdownRequestPacket;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class ClientHandler {
+    private static Logger logger = Logger.getLogger("ClientHandler");
+
     private final Server server;
     private final Socket socket;
     private String login;
@@ -39,14 +42,14 @@ public class ClientHandler {
             try {
                 packet = BasePacket.readPacket(reader);
             } catch (IOException e) {
-                System.err.println("Failed to read packet: " + e);
+                logger.warning("Failed to read packet: " + e);
                 continue;
             } catch (EOFException e) {
-                System.err.println("Client disconnected!");
+                logger.warning("Client " + login + " disconnected!");
                 break;
             }
 
-            System.out.println("Got packet: " + packet + " of type " + packet.getPacketType() + " from " + login);
+            log("got packet: " + packet + " of type " + packet.getPacketType());
             if(packet instanceof SendMessagePacket messagePacket) {
                 server.clientSentMessage(this, messagePacket.text);
             } else if(packet instanceof ShutdownRequestPacket shutdownPacket) {
@@ -80,5 +83,11 @@ public class ClientHandler {
             writer.write(byt);
         }
         writer.flush();
+    }
+
+    public void log(String message) {
+        String prefix = String.format("Client (%s:%d%s)",
+                socket.getInetAddress(), socket.getLocalPort(), (login != null ? (", " + login) : ""));
+        logger.info(prefix + ": " + message);
     }
 }

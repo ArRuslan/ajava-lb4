@@ -11,8 +11,11 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class Server {
+    private static final Logger logger = Logger.getLogger("Server");
+
     private final String address;
     private final int port;
     private ServerSocket socket;
@@ -26,13 +29,13 @@ public class Server {
 
         InputStream stream = getClass().getClassLoader().getResourceAsStream("users.properties");
         if (stream == null) {
-            System.err.println("Failed to load users: stream is null");
+            logger.warning("Failed to load users: stream is null");
         } else {
             try {
                 users.load(stream);
                 stream.close();
             } catch (IOException e) {
-                System.err.println("Failed to load users: " + e);
+                logger.warning("Failed to load users: " + e);
             }
         }
     }
@@ -62,7 +65,7 @@ public class Server {
             try {
                 client.send(new ServerStoppingPacket());
             } catch (IOException e) {
-                System.err.println("Failed to send SERVER_STOPPING packet to client: " + e);
+                logger.warning("Failed to send SERVER_STOPPING packet to client: " + e);
             }
 
             client.close();
@@ -81,15 +84,19 @@ public class Server {
         String login = "";
         try {
             Socket clientSocket = socket.accept();
+            logger.info("Client connected: " + clientSocket.getInetAddress() + ":" + clientSocket.getLocalPort());
+
             ClientHandler client = new ClientHandler(this, clientSocket);
             BasePacket packet = client.readPacket();
             if(!(packet instanceof LoginPacket loginPacket)) {
+                client.log("failed to authenticate: packet is not LoginPacket");
                 client.send(new ServerErrorPacket(400, "Expected LoginPacket to be first!"));
                 client.close();
                 return;
             }
 
             if(!users.containsKey(loginPacket.login) || !users.get(loginPacket.login).equals(loginPacket.password)) {
+                client.log("failed to authenticate: invalid login or password");
                 client.send(new ServerErrorPacket(401, "Invalid login or password!"));
                 client.close();
                 return;
@@ -99,9 +106,10 @@ public class Server {
                 ClientHandler oldClient = clients.get(loginPacket.login);
                 clients.remove(loginPacket.login);
                 try {
+                    client.log("disconnecting because another client with same login is connecting");
                     oldClient.send(new ServerErrorPacket(403, "New client with same login is connecting."));
                 } catch (IOException e) {
-                    System.err.println("Failed to send " + packet.getPacketType() + " packet to old client: " + e);
+                    logger.warning("Failed to send " + packet.getPacketType() + " packet to old client: " + e);
                 }
                 oldClient.close();
             }
@@ -112,10 +120,10 @@ public class Server {
             clients.put(loginPacket.login, client);
             client.handle();
         } catch (IOException e) {
-            System.err.println("Failed to authenticate client: " + e);
+            logger.warning("Failed to authenticate client: " + e);
             return;
         } catch (EOFException e) {
-            System.err.println("Failed to authenticate client: Disconnected");
+            logger.warning("Failed to authenticate client: Disconnected");
             return;
         }
 
@@ -127,12 +135,12 @@ public class Server {
             return;
         }
 
-        System.out.println("Broadcasting "+packet.getPacketType()+" to " + clients.size() + " clients");
+        logger.info("Broadcasting "+packet.getPacketType()+" to " + clients.size() + " clients");
         for(ClientHandler client : clients.values()) {
             try {
                 client.send(packet);
             } catch (IOException e) {
-                System.err.println("Failed to send " + packet.getPacketType() + " packet to client: " + e);
+                client.log("failed to send " + packet.getPacketType() + " packet: " + e);
             }
         }
     }
@@ -154,7 +162,7 @@ public class Server {
             try {
                 client.send(new ServerErrorPacket(403, "Shutdown password is incorrect!"));
             } catch (IOException e) {
-                System.err.println("Failed to send SERVER_ERROR packet to client: " + e);
+                client.log("failed to send SERVER_ERROR packet: " + e);
             }
             client.close();
             return;
@@ -163,7 +171,7 @@ public class Server {
         try {
             stop();
         } catch (IOException e) {
-            System.err.println("Failed to stop server: " + e);
+            logger.warning("Failed to stop server: " + e);
         }
     }
 
