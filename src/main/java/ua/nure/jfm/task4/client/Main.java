@@ -7,7 +7,7 @@ public class Main {
     private final Client client;
     private final Thread clientThread;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Server address [0.0.0.0]: ");
         String address = scanner.nextLine().trim();
