@@ -46,3 +46,7 @@ do
   tmux send-keys -t $SESS_NAME "test$i" Enter
   tmux send-keys -t $SESS_NAME "123456" Enter
 done
+
+echo "Starting shutdown..."
+tmux new-window -t $SESS_NAME -n "Shutdown"
+tmux send-keys -t $SESS_NAME "java -cp $WORK_DIR/target/classes ua.nure.jfm.task4.shutdown.Main" Enter

@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class Server {
     static {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] %4$s:%2$s %5$s%6$s%n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] %4$s %2$s %5$s%6$s%n");
     }
 
     private static final Logger logger = Logger.getLogger("Server");
@@ -23,7 +23,7 @@ public class Server {
     private final String address;
     private final int port;
     private ServerSocket socket;
-    private final Map<String, ClientHandler> clients = new HashMap<>();
+    private Map<String, ClientHandler> clients = new HashMap<>();
     private final Properties users = new Properties();
     private String shutdownPassword = null;
 
@@ -65,6 +65,8 @@ public class Server {
             throw new IllegalStateException("Server is not running!");
         }
 
+        Map<String, ClientHandler> clients = this.clients;
+        this.clients = new HashMap<>();
         for (ClientHandler client : clients.values()) {
             try {
                 client.send(new ServerStoppingPacket());
@@ -75,7 +77,6 @@ public class Server {
             client.close();
         }
 
-        clients.clear();
         socket.close();
         socket = null;
     }
