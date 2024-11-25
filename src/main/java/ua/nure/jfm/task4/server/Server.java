@@ -52,7 +52,16 @@ public class Server {
         try {
             socket = new ServerSocket(port, 128, InetAddress.getByName(address));
             while(socket != null && !socket.isClosed()) {
-                acceptClient();
+                Socket clientSocket;
+                try {
+                    clientSocket = socket.accept();
+                    logger.info("Client connected: " + clientSocket.getInetAddress() + ":" + clientSocket.getLocalPort());
+                } catch (IOException e) {
+                    logger.warning("Failed to accept client: " + e);
+                    continue;
+                }
+
+                new Thread(() -> acceptClient(clientSocket)).start();
             }
         } finally {
             clients.clear();
@@ -81,16 +90,9 @@ public class Server {
         socket = null;
     }
 
-    private void acceptClient() {
-        if(socket == null) {
-            throw new IllegalStateException("Server is not running!");
-        }
-
+    private void acceptClient(Socket clientSocket) {
         String login;
         try {
-            Socket clientSocket = socket.accept();
-            logger.info("Client connected: " + clientSocket.getInetAddress() + ":" + clientSocket.getLocalPort());
-
             ClientHandler client = new ClientHandler(this, clientSocket);
             BasePacket packet = client.readPacket();
             if(!(packet instanceof LoginPacket loginPacket)) {
