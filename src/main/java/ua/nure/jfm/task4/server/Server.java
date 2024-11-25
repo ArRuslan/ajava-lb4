@@ -44,7 +44,7 @@ public class Server {
 
         try {
             socket = new ServerSocket(port, 128, InetAddress.getByName(address));
-            while(!socket.isClosed()) {
+            while(socket != null && !socket.isClosed()) {
                 acceptClient();
             }
         } finally {
@@ -58,7 +58,7 @@ public class Server {
             throw new IllegalStateException("Server is not running!");
         }
 
-        for(ClientHandler client : clients.values()) {
+        for (ClientHandler client : clients.values()) {
             try {
                 client.send(new ServerStoppingPacket());
             } catch (IOException e) {
@@ -68,6 +68,7 @@ public class Server {
             client.close();
         }
 
+        clients.clear();
         socket.close();
         socket = null;
     }
@@ -122,6 +123,10 @@ public class Server {
     }
 
     protected void broadcast(BasePacket packet) {
+        if(socket == null || socket.isClosed()) {
+            return;
+        }
+
         System.out.println("Broadcasting "+packet.getPacketType()+" to " + clients.size() + " clients");
         for(ClientHandler client : clients.values()) {
             try {

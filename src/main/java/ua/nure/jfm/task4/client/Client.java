@@ -55,6 +55,10 @@ public class Client extends ClientBase {
         System.out.println("[Server] " + login + " disconnected!");
     }
 
+    protected void onServerStopping() {
+        System.err.println("Server is stopping...");
+    }
+
     protected void onDisconnected() {
         System.err.println("Disconnected!");
         inputThread.interrupt();

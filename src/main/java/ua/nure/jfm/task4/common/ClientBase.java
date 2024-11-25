@@ -76,6 +76,8 @@ public class ClientBase {
                 onClientConnected(clientConnectedPacket.login);
             } else if (packet instanceof ClientDisconnectedPacket clientDisconnectedPacket) {
                 onClientDisconnected(clientDisconnectedPacket.login);
+            } else if (packet instanceof ServerStoppingPacket) {
+                onServerStopping();
             }
         }
 
@@ -119,6 +121,10 @@ public class ClientBase {
     }
 
     protected void onClientDisconnected(String login) {
+
+    }
+
+    protected void onServerStopping() {
 
     }
 

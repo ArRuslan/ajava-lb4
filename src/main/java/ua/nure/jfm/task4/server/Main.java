@@ -73,6 +73,8 @@ public class Main {
                 server.stop();
             } catch (IOException e) {
                 System.err.println("Error occurred while stopping server: "+e);
+            } catch (IllegalStateException ignored) {
+
             }
         }));
 

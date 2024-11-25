@@ -39,7 +39,7 @@ public class ClientHandler {
             try {
                 packet = BasePacket.readPacket(reader);
             } catch (IOException e) {
-                System.err.println("Failed to read packet:" + e);
+                System.err.println("Failed to read packet: " + e);
                 continue;
             } catch (EOFException e) {
                 System.err.println("Client disconnected!");

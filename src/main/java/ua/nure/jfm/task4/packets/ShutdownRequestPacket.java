@@ -23,7 +23,7 @@ public class ShutdownRequestPacket extends BasePacket {
 
     @Override
     public PacketType getPacketType() {
-        return PacketType.SEND_MESSAGE;
+        return PacketType.SHUTDOWN_REQUEST;
     }
 
     @Override
