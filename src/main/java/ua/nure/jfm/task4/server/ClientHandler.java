@@ -86,8 +86,8 @@ public class ClientHandler {
     }
 
     public void log(String message) {
-        String prefix = String.format("Client (%s:%d%s)",
+        /*String prefix = String.format("Client (%s:%d%s)",
                 socket.getInetAddress(), socket.getLocalPort(), (login != null ? (", " + login) : ""));
-        logger.info(prefix + ": " + message);
+        logger.info(prefix + ": " + message);*/
     }
 }

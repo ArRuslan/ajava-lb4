@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 public class Server {
@@ -26,6 +27,10 @@ public class Server {
     private Map<String, ClientHandler> clients = new HashMap<>();
     private final Properties users = new Properties();
     private String shutdownPassword = null;
+    private boolean stopped = false;
+    private final ConcurrentLinkedQueue<BasePacket> queue = new ConcurrentLinkedQueue<>();
+    private final Object QUEUE_PUSH = new Object();
+    private Thread loopThread;
 
     public Server(String address, int port) {
         this.address = address;
@@ -51,6 +56,10 @@ public class Server {
 
         try {
             socket = new ServerSocket(port, 128, InetAddress.getByName(address));
+            loopThread = new Thread(this::serverLoop);
+            loopThread.setName("ServerLoop");
+            loopThread.start();
+
             while(socket != null && !socket.isClosed()) {
                 Socket clientSocket;
                 try {
@@ -72,6 +81,12 @@ public class Server {
     public void stop() throws IOException {
         if(socket == null || socket.isClosed()) {
             throw new IllegalStateException("Server is not running!");
+        }
+
+        stopped = true;
+        try {
+            loopThread.wait();
+        } catch (InterruptedException ignored) {
         }
 
         Map<String, ClientHandler> clients = this.clients;
@@ -134,7 +149,35 @@ public class Server {
             return;
         }
 
-        broadcast(new ClientConnectedPacket(login));
+        queuePush(new ClientConnectedPacket(login));
+    }
+
+    private void serverLoop() {
+        while(true) {
+            BasePacket packet = queue.poll();
+            if(packet == null && stopped) {
+                break;
+            } else if(packet == null) {
+                synchronized (QUEUE_PUSH) {
+                    try {
+                        QUEUE_PUSH.wait();
+                    } catch(InterruptedException ignored) {}
+                }
+                continue;
+            }
+            broadcast(packet);
+        }
+    }
+
+    private void queuePush(BasePacket packet) {
+        if(stopped) {
+            return;
+        }
+
+        queue.add(packet);
+        synchronized (QUEUE_PUSH) {
+            QUEUE_PUSH.notifyAll();
+        }
     }
 
     protected void broadcast(BasePacket packet) {
@@ -157,11 +200,11 @@ public class Server {
             clients.remove(client.getLogin());
         }
 
-        broadcast(new ClientDisconnectedPacket(client.getLogin()));
+        queuePush(new ClientDisconnectedPacket(client.getLogin()));
     }
 
     protected synchronized void clientSentMessage(ClientHandler client, String message) {
-        broadcast(new NewMessagePacket(client.getLogin(), message));
+        queuePush(new NewMessagePacket(client.getLogin(), message));
     }
 
     protected synchronized void clientSentShutdown(ClientHandler client, String password) {
