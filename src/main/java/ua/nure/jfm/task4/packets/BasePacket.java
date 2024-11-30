@@ -41,11 +41,26 @@ public abstract class BasePacket {
         return result;
     }
 
-    public static BasePacket readPacket(BufferedReader reader) throws IOException, EOFException {
-        char[] data = new char[1];
-        if(!readExactly(reader, data)) {
+    protected static byte[] readExactlyBytes(BufferedReader reader, int length) throws IOException {
+        char[] out = new char[length];
+        if(!readExactly(reader, out)) {
+            return null;
+        }
+
+        return charArrToByteArr(out);
+    }
+
+    protected static byte[] readExactlyBytesWithEOF(BufferedReader reader, int length) throws IOException, EOFException {
+        byte[] result = readExactlyBytes(reader, length);
+        if(result == null) {
             throw new EOFException();
         }
+
+        return result;
+    }
+
+    public static BasePacket readPacket(BufferedReader reader) throws IOException, EOFException {
+        byte[] data = readExactlyBytesWithEOF(reader, 1);
 
         if(data[0] > PacketType.values().length) {
             throw new IllegalArgumentException("Invalid packet type: "+ data[0]);

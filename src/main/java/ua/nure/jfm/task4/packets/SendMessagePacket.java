@@ -39,18 +39,11 @@ public class SendMessagePacket extends BasePacket {
 
     @Override
     public void decode(BufferedReader reader) throws IOException, EOFException {
-        char[] tmp = new char[STRING_LENGTH_SIZE];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        byte[] tmp = readExactlyBytesWithEOF(reader, STRING_LENGTH_SIZE);
+        ByteBuffer buf = ByteBuffer.wrap(tmp).order(ByteOrder.LITTLE_ENDIAN);
+        char textSize = buf.getChar();
 
-        ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
-        char loginSize = buf.getChar();
-
-        tmp = new char[loginSize];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        tmp = readExactlyBytesWithEOF(reader, textSize);
         text = new String(tmp);
     }
 }

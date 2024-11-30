@@ -1,9 +1,6 @@
 package ua.nure.jfm.task4.packets;
 
-import ua.nure.jfm.task4.exceptions.EOFException;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 
 public class ServerHelloPacket extends BasePacket {
     @Override

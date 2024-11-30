@@ -30,6 +30,7 @@ public class Server {
     private boolean stopped = false;
     private final ConcurrentLinkedQueue<BasePacket> queue = new ConcurrentLinkedQueue<>();
     private final Object QUEUE_PUSH = new Object();
+    private final Object LOOP_THREAD_EXIT = new Object();
     private Thread loopThread;
 
     public Server(String address, int port) {
@@ -84,9 +85,11 @@ public class Server {
         }
 
         stopped = true;
-        try {
-            loopThread.wait();
-        } catch (InterruptedException ignored) {
+        synchronized (LOOP_THREAD_EXIT) {
+            try {
+                LOOP_THREAD_EXIT.wait();
+            } catch (InterruptedException ignored) {
+            }
         }
 
         Map<String, ClientHandler> clients = this.clients;
@@ -166,6 +169,11 @@ public class Server {
                 continue;
             }
             broadcast(packet);
+        }
+
+        loopThread = null;
+        synchronized (LOOP_THREAD_EXIT) {
+            LOOP_THREAD_EXIT.notifyAll();
         }
     }
 

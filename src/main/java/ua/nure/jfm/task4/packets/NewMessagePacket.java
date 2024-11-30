@@ -46,32 +46,18 @@ public class NewMessagePacket extends BasePacket {
 
     @Override
     public void decode(BufferedReader reader) throws IOException, EOFException {
-        char[] tmp = new char[STRING_LENGTH_SIZE];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
-
-        ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        byte[] tmp = readExactlyBytesWithEOF(reader, STRING_LENGTH_SIZE);
+        ByteBuffer buf = ByteBuffer.wrap(tmp).order(ByteOrder.LITTLE_ENDIAN);
         char loginSize = buf.getChar();
 
-        tmp = new char[loginSize];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        tmp = readExactlyBytesWithEOF(reader, loginSize);
         login = new String(tmp);
 
-        tmp = new char[STRING_LENGTH_SIZE];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        tmp = readExactlyBytesWithEOF(reader, STRING_LENGTH_SIZE);
+        buf = ByteBuffer.wrap(tmp).order(ByteOrder.LITTLE_ENDIAN);
+        char textSize = buf.getChar();
 
-        buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
-        char passwordSize = buf.getChar();
-
-        tmp = new char[passwordSize];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        tmp = readExactlyBytesWithEOF(reader, textSize);
         text = new String(tmp);
     }
 }

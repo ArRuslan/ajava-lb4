@@ -37,18 +37,12 @@ public class ClientDisconnectedPacket extends BasePacket {
 
     @Override
     public void decode(BufferedReader reader) throws IOException, EOFException {
-        char[] tmp = new char[STRING_LENGTH_SIZE];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        byte[] tmp = readExactlyBytesWithEOF(reader, STRING_LENGTH_SIZE);
 
-        ByteBuffer buf = ByteBuffer.wrap(charArrToByteArr(tmp)).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buf = ByteBuffer.wrap(tmp).order(ByteOrder.LITTLE_ENDIAN);
         char messageSize = buf.getChar();
 
-        tmp = new char[messageSize];
-        if(!readExactly(reader, tmp)) {
-            throw new EOFException();
-        }
+        tmp = readExactlyBytesWithEOF(reader, messageSize);
         login = new String(tmp);
     }
 }
