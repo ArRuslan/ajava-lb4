@@ -29,7 +29,7 @@ public class ClientConnectedPacket extends BasePacket {
         byte[] loginBytes = login.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[STRING_LENGTH_SIZE + loginBytes.length];
         ByteBuffer buf = ByteBuffer.wrap(result).order(ByteOrder.LITTLE_ENDIAN);
-        buf.putChar((char)loginBytes.length);
+        buf.putChar((char) loginBytes.length);
         buf.put(loginBytes);
 
         return result;

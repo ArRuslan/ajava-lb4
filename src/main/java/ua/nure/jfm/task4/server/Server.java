@@ -51,7 +51,7 @@ public class Server {
     }
 
     public void run() throws IOException {
-        if(socket != null) {
+        if (socket != null) {
             throw new IllegalStateException("Server is already running!");
         }
 
@@ -61,7 +61,7 @@ public class Server {
             loopThread.setName("ServerLoop");
             loopThread.start();
 
-            while(socket != null && !socket.isClosed()) {
+            while (socket != null && !socket.isClosed()) {
                 Socket clientSocket;
                 try {
                     clientSocket = socket.accept();
@@ -80,11 +80,14 @@ public class Server {
     }
 
     public void stop() throws IOException {
-        if(socket == null || socket.isClosed()) {
+        if (socket == null || socket.isClosed()) {
             throw new IllegalStateException("Server is not running!");
         }
 
         stopped = true;
+        synchronized (QUEUE_PUSH) {
+            QUEUE_PUSH.notifyAll();
+        }
         synchronized (LOOP_THREAD_EXIT) {
             try {
                 LOOP_THREAD_EXIT.wait();
@@ -113,21 +116,21 @@ public class Server {
         try {
             ClientHandler client = new ClientHandler(this, clientSocket);
             BasePacket packet = client.readPacket();
-            if(!(packet instanceof LoginPacket loginPacket)) {
+            if (!(packet instanceof LoginPacket loginPacket)) {
                 client.log("failed to authenticate: packet is not LoginPacket");
                 client.send(new ServerErrorPacket(400, "Expected LoginPacket to be first!"));
                 client.close();
                 return;
             }
 
-            if(!users.containsKey(loginPacket.login) || !users.get(loginPacket.login).equals(loginPacket.password)) {
+            if (!users.containsKey(loginPacket.login) || !users.get(loginPacket.login).equals(loginPacket.password)) {
                 client.log("failed to authenticate: invalid login or password");
                 client.send(new ServerErrorPacket(401, "Invalid login or password!"));
                 client.close();
                 return;
             }
 
-            if(clients.containsKey(loginPacket.login)) {
+            if (clients.containsKey(loginPacket.login)) {
                 ClientHandler oldClient = clients.get(loginPacket.login);
                 clients.remove(loginPacket.login);
                 try {
@@ -156,15 +159,16 @@ public class Server {
     }
 
     private void serverLoop() {
-        while(true) {
+        while (true) {
             BasePacket packet = queue.poll();
-            if(packet == null && stopped) {
+            if (packet == null && stopped) {
                 break;
-            } else if(packet == null) {
+            } else if (packet == null) {
                 synchronized (QUEUE_PUSH) {
                     try {
                         QUEUE_PUSH.wait();
-                    } catch(InterruptedException ignored) {}
+                    } catch (InterruptedException ignored) {
+                    }
                 }
                 continue;
             }
@@ -178,7 +182,7 @@ public class Server {
     }
 
     private void queuePush(BasePacket packet) {
-        if(stopped) {
+        if (stopped) {
             return;
         }
 
@@ -189,12 +193,12 @@ public class Server {
     }
 
     protected void broadcast(BasePacket packet) {
-        if(socket == null || socket.isClosed()) {
+        if (socket == null || socket.isClosed()) {
             return;
         }
 
-        logger.info("Broadcasting "+packet.getPacketType()+" to " + clients.size() + " clients");
-        for(ClientHandler client : clients.values()) {
+        logger.info("Broadcasting " + packet.getPacketType() + " to " + clients.size() + " clients");
+        for (ClientHandler client : clients.values()) {
             try {
                 client.send(packet);
             } catch (IOException e) {
@@ -204,7 +208,7 @@ public class Server {
     }
 
     protected synchronized void clientDisconnected(ClientHandler client) {
-        if(clients.containsKey(client.getLogin()) && clients.get(client.getLogin()) == client) {
+        if (clients.containsKey(client.getLogin()) && clients.get(client.getLogin()) == client) {
             clients.remove(client.getLogin());
         }
 
@@ -216,7 +220,7 @@ public class Server {
     }
 
     protected synchronized void clientSentShutdown(ClientHandler client, String password) {
-        if(!shutdownPassword.equals(password)) {
+        if (!shutdownPassword.equals(password)) {
             try {
                 client.send(new ServerErrorPacket(403, "Shutdown password is incorrect!"));
             } catch (IOException e) {

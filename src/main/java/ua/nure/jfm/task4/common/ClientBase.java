@@ -22,14 +22,14 @@ public class ClientBase {
 
     synchronized public void send(BasePacket packet) throws IOException {
         writer.write(packet.getPacketType().ordinal());
-        for(byte byt : packet.encode()) {
+        for (byte byt : packet.encode()) {
             writer.write(byt);
         }
         writer.flush();
     }
 
     public void connect() throws IOException {
-        if(socket != null) {
+        if (socket != null) {
             throw new IllegalStateException("Client is already connected to server!");
         }
 
@@ -42,7 +42,7 @@ public class ClientBase {
     }
 
     public void authenticate(String login, String password) {
-        if(socket == null) {
+        if (socket == null) {
             throw new IllegalStateException("Client is not connected to server!");
         }
 
@@ -54,7 +54,7 @@ public class ClientBase {
     }
 
     private void loop() {
-        while(!socket.isClosed()) {
+        while (!socket.isClosed()) {
             BasePacket packet;
             try {
                 packet = BasePacket.readPacket(reader);
@@ -85,7 +85,7 @@ public class ClientBase {
     }
 
     public void disconnect() throws IOException {
-        if(socket == null) {
+        if (socket == null) {
             throw new IllegalStateException("Client is not connected to server!");
         }
 

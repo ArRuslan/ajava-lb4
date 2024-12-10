@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class ServerErrorPacket extends BasePacket {
@@ -36,7 +35,7 @@ public class ServerErrorPacket extends BasePacket {
         byte[] result = new byte[INT_SIZE + STRING_LENGTH_SIZE + messageBytes.length];
         ByteBuffer buf = ByteBuffer.wrap(result).order(ByteOrder.LITTLE_ENDIAN);
         buf.putInt(code);
-        buf.putChar((char)messageBytes.length);
+        buf.putChar((char) messageBytes.length);
         buf.put(messageBytes);
 
         return result;

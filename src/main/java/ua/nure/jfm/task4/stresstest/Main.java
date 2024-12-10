@@ -13,7 +13,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Server address [0.0.0.0]: ");
         String address = scanner.nextLine().trim();
-        if(address.isEmpty()) {
+        if (address.isEmpty()) {
             address = "0.0.0.0";
         }
 
@@ -45,18 +45,18 @@ public class Main {
         System.out.print("Shutdown password: ");
         String password = scanner.nextLine().trim();
 
-        for(int i = 0; i < 1024 * 8; i++) {
+        for (int i = 0; i < 1024 * 8; i++) {
             try {
-                client.send(new SendMessagePacket("some message # "+i));
+                client.send(new SendMessagePacket("some message # " + i));
             } catch (IOException e) {
-                System.err.println("Error occurred while sending message #"+i+": "+e);
+                System.err.println("Error occurred while sending message #" + i + ": " + e);
             }
         }
 
         try {
             client.send(new ShutdownRequestPacket(password));
         } catch (IOException e) {
-            System.err.println("Error occurred while sending shutdown request: "+e);
+            System.err.println("Error occurred while sending shutdown request: " + e);
         }
     }
 
@@ -64,7 +64,7 @@ public class Main {
         try {
             client.connect();
         } catch (IOException e) {
-            System.err.println("Error occurred while starting chat: "+e);
+            System.err.println("Error occurred while starting chat: " + e);
         }
     }
 }

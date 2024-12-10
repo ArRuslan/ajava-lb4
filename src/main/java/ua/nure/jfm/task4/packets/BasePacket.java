@@ -11,11 +11,13 @@ public abstract class BasePacket {
     public static final int STRING_LENGTH_SIZE = 2;
 
     abstract public PacketType getPacketType();
+
     abstract public byte[] encode();
+
     abstract public void decode(BufferedReader reader) throws IOException, EOFException;
 
     protected static void checkStringSize(String string) {
-        if(string.getBytes(StandardCharsets.UTF_8).length > 0x7fff) {
+        if (string.getBytes(StandardCharsets.UTF_8).length > 0x7fff) {
             throw new IllegalArgumentException("String length must be less than 32767 bytes");
         }
     }
@@ -24,7 +26,7 @@ public abstract class BasePacket {
         int totalRead = 0;
         int read = reader.read(out);
         totalRead += read;
-        while(read != -1 && totalRead < out.length) {
+        while (read != -1 && totalRead < out.length) {
             read = reader.read(out, totalRead, out.length - totalRead);
             totalRead += read;
         }
@@ -34,8 +36,8 @@ public abstract class BasePacket {
 
     protected static byte[] charArrToByteArr(char[] arr) {
         byte[] result = new byte[arr.length];
-        for(int i = 0; i < arr.length; i++) {
-            result[i] = (byte)arr[i];
+        for (int i = 0; i < arr.length; i++) {
+            result[i] = (byte) arr[i];
         }
 
         return result;
@@ -43,7 +45,7 @@ public abstract class BasePacket {
 
     protected static byte[] readExactlyBytes(BufferedReader reader, int length) throws IOException {
         char[] out = new char[length];
-        if(!readExactly(reader, out)) {
+        if (!readExactly(reader, out)) {
             return null;
         }
 
@@ -52,7 +54,7 @@ public abstract class BasePacket {
 
     protected static byte[] readExactlyBytesWithEOF(BufferedReader reader, int length) throws IOException, EOFException {
         byte[] result = readExactlyBytes(reader, length);
-        if(result == null) {
+        if (result == null) {
             throw new EOFException();
         }
 
@@ -62,8 +64,8 @@ public abstract class BasePacket {
     public static BasePacket readPacket(BufferedReader reader) throws IOException, EOFException {
         byte[] data = readExactlyBytesWithEOF(reader, 1);
 
-        if(data[0] > PacketType.values().length) {
-            throw new IllegalArgumentException("Invalid packet type: "+ data[0]);
+        if (data[0] > PacketType.values().length) {
+            throw new IllegalArgumentException("Invalid packet type: " + data[0]);
         }
 
         PacketType type = PacketType.values()[data[0]];

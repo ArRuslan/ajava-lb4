@@ -10,7 +10,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Server address [0.0.0.0]: ");
         String address = scanner.nextLine().trim();
-        if(address.isEmpty()) {
+        if (address.isEmpty()) {
             address = "0.0.0.0";
         }
 
@@ -40,7 +40,7 @@ public class Main {
         try {
             client.connect();
         } catch (IOException e) {
-            System.err.println("Error occurred while starting chat: "+e);
+            System.err.println("Error occurred while starting chat: " + e);
         }
     }
 }

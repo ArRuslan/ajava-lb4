@@ -36,9 +36,9 @@ public class LoginPacket extends BasePacket {
         byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[STRING_LENGTH_SIZE + loginBytes.length + STRING_LENGTH_SIZE + passwordBytes.length];
         ByteBuffer buf = ByteBuffer.wrap(result).order(ByteOrder.LITTLE_ENDIAN);
-        buf.putChar((char)loginBytes.length);
+        buf.putChar((char) loginBytes.length);
         buf.put(loginBytes);
-        buf.putChar((char)passwordBytes.length);
+        buf.putChar((char) passwordBytes.length);
         buf.put(passwordBytes);
 
         return result;

@@ -16,7 +16,7 @@ public class Client extends ClientBase {
     }
 
     public void sendMessage(String text) {
-        if(!isRunning()) {
+        if (!isRunning()) {
             throw new IllegalStateException("Client is not connected to server!");
         }
 

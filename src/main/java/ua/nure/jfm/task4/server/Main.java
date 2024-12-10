@@ -27,8 +27,8 @@ public class Main {
         String shutdownPassword;
 
         Scanner scanner = new Scanner(System.in);
-        if(props.containsKey("address")) {
-            address = (String)props.get("address");
+        if (props.containsKey("address")) {
+            address = (String) props.get("address");
         } else {
             System.out.print("Server address [0.0.0.0]: ");
             address = scanner.nextLine().trim();
@@ -37,7 +37,7 @@ public class Main {
             }
         }
 
-        if(props.containsKey("port")) {
+        if (props.containsKey("port")) {
             try {
                 port = Integer.parseInt((String) props.get("port"));
             } catch (NumberFormatException e) {
@@ -49,8 +49,8 @@ public class Main {
             port = scanner.nextInt();
         }
 
-        if(props.containsKey("shutdown_password")) {
-            shutdownPassword = (String)props.get("shutdown_password");
+        if (props.containsKey("shutdown_password")) {
+            shutdownPassword = (String) props.get("shutdown_password");
         } else {
             System.out.print("Shutdown password: ");
             shutdownPassword = scanner.nextLine().trim();
@@ -72,7 +72,7 @@ public class Main {
             try {
                 server.stop();
             } catch (IOException e) {
-                System.err.println("Error occurred while stopping server: "+e);
+                System.err.println("Error occurred while stopping server: " + e);
             } catch (IllegalStateException ignored) {
 
             }
@@ -81,7 +81,7 @@ public class Main {
         try {
             server.run();
         } catch (IOException e) {
-            System.err.println("Error occurred while starting server: "+e);
+            System.err.println("Error occurred while starting server: " + e);
         }
     }
 }

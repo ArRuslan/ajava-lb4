@@ -38,7 +38,8 @@ do
   tmux send-keys -t $SESS_NAME "123456" Enter
 done
 
-for i in {5..99}
+#for i in {5..99}
+for i in 5 6 7 8
 do
   echo "Starting chat $i..."
   tmux new-window -t $SESS_NAME -n "Chat $i"

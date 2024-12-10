@@ -50,9 +50,9 @@ public class ClientHandler {
             }
 
             log("got packet: " + packet + " of type " + packet.getPacketType());
-            if(packet instanceof SendMessagePacket messagePacket) {
+            if (packet instanceof SendMessagePacket messagePacket) {
                 server.clientSentMessage(this, messagePacket.text);
-            } else if(packet instanceof ShutdownRequestPacket shutdownPacket) {
+            } else if (packet instanceof ShutdownRequestPacket shutdownPacket) {
                 server.clientSentShutdown(this, shutdownPacket.password);
             }
         }
@@ -65,7 +65,7 @@ public class ClientHandler {
     }
 
     public void handle() {
-        if(!thread.isAlive())
+        if (!thread.isAlive())
             thread.start();
     }
 
@@ -79,7 +79,7 @@ public class ClientHandler {
 
     synchronized public void send(BasePacket packet) throws IOException {
         writer.write(packet.getPacketType().ordinal());
-        for(byte byt : packet.encode()) { // WHY????
+        for (byte byt : packet.encode()) { // WHY????
             writer.write(byt);
         }
         writer.flush();

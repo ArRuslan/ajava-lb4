@@ -36,9 +36,9 @@ public class NewMessagePacket extends BasePacket {
         byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[STRING_LENGTH_SIZE + loginBytes.length + STRING_LENGTH_SIZE + textBytes.length];
         ByteBuffer buf = ByteBuffer.wrap(result).order(ByteOrder.LITTLE_ENDIAN);
-        buf.putChar((char)loginBytes.length);
+        buf.putChar((char) loginBytes.length);
         buf.put(loginBytes);
-        buf.putChar((char)textBytes.length);
+        buf.putChar((char) textBytes.length);
         buf.put(textBytes);
 
         return result;
